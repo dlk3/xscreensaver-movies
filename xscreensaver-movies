@@ -6,12 +6,13 @@
 #
 #  To install on Fedora 30 Linux:
 #  1) Make sure that you have the "mpv" application installed
-#  2) Put this file in /usr/local/libexec/xscreensaver/
+#  2) Put this file in /usr/libexec/xscreensaver/ and make executable
 #  3) Put the paths containing the movies you want to use into the
 #     "movie_paths" variable below
 #  4) Edit the ~/.xscreensaver file and add the following line at the
 #     end of the "programs:" list found in that file:
 #        "My Movies" xscreensaver-movies \n\
+#  5) Configure xscreensaver to use this file
 
 import os
 import random
