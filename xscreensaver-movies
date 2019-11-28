@@ -1,0 +1,81 @@
+#!/usr/bin/env python
+
+#  A script that will play movie files as screensavers in xscreensaver.
+#  Movies are played in random order and do not repeat until all movies
+#  have been played.
+#
+#  To install on Fedora 30 Linux:
+#  1) Make sure that you have the "mpv" application installed
+#  2) Put this file in /usr/local/libexec/xscreensaver/
+#  3) Put the paths containing the movies you want to use into the
+#     "movie_paths" variable below
+#  4) Edit the ~/.xscreensaver file and add the following line at the
+#     end of the "programs:" list found in that file:
+#        "My Movies" xscreensaver-movies \n\
+
+import os
+import random
+import subprocess
+import signal
+
+#  Play the movies found in the following directories as screensavers
+movie_paths = ["/opt/ATV4", "/mnt/Video/TV/Archive/Sunrise Earth"]
+
+#  We want to play ALL of the movies in these directories in random 
+#  order, remembering what has been played across multiple invocations
+#  of this script.  We will keep a list of the movies that have yet to
+#  be played on disk in a config file.
+config_file = os.path.join(os.environ['HOME'], '.config', 'xscreensaver-movies')
+
+#  This function creates a new copy of the config file containing all
+#  movies in random order.
+def create_new_config_file(path_list, config_file):
+	movie_list = []
+	for path in path_list:
+		for dirpath, dirnames, filenames in os.walk(path):
+			for fn in filenames:
+				if fn.endswith(('.mov', '.mp4', 'mkv', 'mpg', '.avi')):
+					if os.path.exists(os.path.join(dirpath, fn)):
+						movie_list.append(os.path.join(dirpath, fn))
+	random.shuffle(movie_list)
+	with open(config_file, 'w') as f:
+		for line in movie_list:
+			f.write("{}\n".format(line))
+	
+#  If the config file doesn't exist when we start the script, create it
+if not os.path.exists(config_file):
+	create_new_config_file(movie_paths, config_file)
+
+#  Read the config file to get the list of movies yet to be played		
+with open(config_file, 'r') as f:
+	movie_list = f.readlines()
+movie_list = [element.strip() for element in movie_list]
+
+#  Ignore the following system signals
+signal.signal(signal.SIGINT, signal.SIG_IGN)
+signal.signal(signal.SIGHUP, signal.SIG_IGN)
+signal.signal(signal.SIGTERM, signal.SIG_IGN)
+
+while True:
+	#  If there's nothing left in the list of movies, make a new random
+	#  list, i.e., start over from the beginning
+	if len(movie_list) <= 0:
+		create_new_config_file(movie_paths, config_file)
+		with open(config_file, 'r') as f:
+			movie_list = f.readlines()
+		movie_list = [element.strip() for element in movie_list]
+		
+	#  Pop the first movie off the top of the list and write the
+	#  remainder of the list back to disk
+	movie = movie_list.pop(0)
+	with open(config_file, 'w') as f:
+		for line in movie_list:
+			f.write("{}\n".format(line))
+	
+	#  Play the popped movie
+	if 'XSCREENSAVER_WINDOW' in os.environ:
+		window_id = os.environ['XSCREENSAVER_WINDOW']
+		cmdline = "mpv --really-quiet --no-audio --fs --no-stop-screensaver --wid='{}' --panscan=1.0 '{}'".format(window_id, movie)
+	else:
+		cmdline = "mpv --really-quiet --no-audio --fs --no-stop-screensaver --panscan=1.0 '{}'".format(movie)
+	subprocess.call(cmdline, shell=True)
