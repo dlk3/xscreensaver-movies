@@ -52,9 +52,9 @@ with open(config_file, 'r') as f:
 movie_list = [element.strip() for element in movie_list]
 
 #  Ignore the following system signals
-signal.signal(signal.SIGINT, signal.SIG_IGN)
-signal.signal(signal.SIGHUP, signal.SIG_IGN)
-signal.signal(signal.SIGTERM, signal.SIG_IGN)
+#signal.signal(signal.SIGINT, signal.SIG_IGN)
+#signal.signal(signal.SIGHUP, signal.SIG_IGN)
+#signal.signal(signal.SIGTERM, signal.SIG_IGN)
 
 while True:
 	#  If there's nothing left in the list of movies, make a new random
