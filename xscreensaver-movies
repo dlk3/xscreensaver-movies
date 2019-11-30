@@ -17,15 +17,14 @@
 import os
 import random
 import subprocess
-import signal
 
 #  Play the movies found in the following directories as screensavers
 movie_paths = ["/opt/ATV4", "/mnt/Video/TV/Archive/Sunrise Earth"]
 
 #  We want to play ALL of the movies in these directories in random 
 #  order, remembering what has been played across multiple invocations
-#  of this script.  We will keep a list of the movies that have yet to
-#  be played on disk in a config file.
+#  of this script.  To do this we keep a list of the movies that have
+#  yet to be played on disk in a config file.
 config_file = os.path.join(os.environ['HOME'], '.config', 'xscreensaver-movies')
 
 #  This function creates a new copy of the config file containing all
@@ -35,7 +34,7 @@ def create_new_config_file(path_list, config_file):
 	for path in path_list:
 		for dirpath, dirnames, filenames in os.walk(path):
 			for fn in filenames:
-				if fn.endswith(('.mov', '.mp4', 'mkv', 'mpg', '.avi')):
+				if fn.endswith(('.mov', '.mp4', '.mkv', '.mpg', '.avi')):
 					if os.path.exists(os.path.join(dirpath, fn)):
 						movie_list.append(os.path.join(dirpath, fn))
 	random.shuffle(movie_list)
@@ -51,11 +50,6 @@ if not os.path.exists(config_file):
 with open(config_file, 'r') as f:
 	movie_list = f.readlines()
 movie_list = [element.strip() for element in movie_list]
-
-#  Ignore the following system signals
-#signal.signal(signal.SIGINT, signal.SIG_IGN)
-#signal.signal(signal.SIGHUP, signal.SIG_IGN)
-#signal.signal(signal.SIGTERM, signal.SIG_IGN)
 
 while True:
 	#  If there's nothing left in the list of movies, make a new random
@@ -73,10 +67,10 @@ while True:
 		for line in movie_list:
 			f.write("{}\n".format(line))
 	
-	#  Play the popped movie
-	if 'XSCREENSAVER_WINDOW' in os.environ:
-		window_id = os.environ['XSCREENSAVER_WINDOW']
-		cmdline = "mpv --really-quiet --no-audio --fs --no-stop-screensaver --wid='{}' --panscan=1.0 '{}'".format(window_id, movie)
-	else:
-		cmdline = "mpv --really-quiet --no-audio --fs --no-stop-screensaver --panscan=1.0 '{}'".format(movie)
-	subprocess.call(cmdline, shell=True)
+	#  Play the popped file
+	if os.path.exists(movie):
+		if 'XSCREENSAVER_WINDOW' in os.environ:
+			cmdline = "mpv --really-quiet --no-audio --fs --no-stop-screensaver --wid='{}' --panscan=1.0 '{}'".format(os.environ['XSCREENSAVER_WINDOW'], movie)
+		else:
+			cmdline = "mpv --really-quiet --no-audio --fs --no-stop-screensaver --panscan=1.0 '{}'".format(movie)
+		subprocess.call(cmdline, shell=True)
