@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<screensaver name="xscreensaver-movies" _label="Play Movies">
+
+  <_description>
+This Python script plays video clips.  The list of directories this script looks into for clips is coded inside the script
+itself.  Edit the file /usr/libexec/xscreensaver/xscreensaver-movies to set these directories.
+  </_description>
+</screensaver>
