@@ -25,6 +25,7 @@ This is a Python script that will play video files as screensavers in xscreensav
 %install
 mkdir -p %{buildroot}/usr/libexec/xscreensaver/
 install -m 755 xscreensaver-movies %{buildroot}/usr/libexec/xscreensaver/xscreensaver-movies
+mkdir -p %{buildroot}/usr/share/xscreensaver/hacks.conf.d/
 install -m 755 xscreensaver-movies.conf %{buildroot}/usr/share/xscreensaver/hacks.conf.d/xscreensaver-movies.conf
 
 
@@ -33,6 +34,10 @@ install -m 755 xscreensaver-movies.conf %{buildroot}/usr/share/xscreensaver/hack
 %doc README.md
 /usr/libexec/xscreensaver/xscreensaver-movies
 /usr/share/xscreensaver/hacks.conf.d/xscreensaver-movies.conf
+
+
+%post
+%{_sbindir}/update-xscreensaver-hacks
 
 
 %changelog
