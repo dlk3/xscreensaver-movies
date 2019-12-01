@@ -1,0 +1,9 @@
+#!/bin/sh
+
+NAME="xscreensaver-movies"
+VERSION="0.1"
+
+cd ~/src
+tar --exclude=.git --exclude=*.spec --exclude=mkrpms -zcvf ~/rpmbuild/SOURCES/${NAME}-${VERSION}.tar.gz ${NAME}-${VERSION}
+cd ~/src/"${NAME}-${VERSION}"
+rpmbuild -ba "${NAME}.spec"
