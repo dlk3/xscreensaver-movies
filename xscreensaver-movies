@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python2
 
 #  A script that will play movie files as screensavers in xscreensaver.
 #  Movies are played in random order and do not repeat until all movies
