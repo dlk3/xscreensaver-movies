@@ -1,76 +1,114 @@
 #!/usr/bin/python2
+################################################################################
+#  Copyright 2019 David King
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a 
+#  copy of this software and associated documentation files (the 
+#  "Software"), to deal in the Software without restriction, including
+#  without limitation the rights to use, copy, modify, merge, publish,
+#  distribute, sublicense, and/or sell copies of the Software, and to
+#  permit persons to whom the Software is furnished to do so, subject to
+#  the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included
+#  in all copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+#  OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+#  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+#  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+#  CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+#  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+#  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+################################################################################
 
-#  A script that will play movie files as screensavers in xscreensaver.
-#  Movies are played in random order and do not repeat until all movies
+#  A script that will play video files as screen savers in xscreensaver.
+#  Videos are played in random order and do not repeat until all videos
 #  have been played.
 #
-#  To install on Fedora 30 Linux:
-#  1) Make sure that you have the "mpv" application installed
-#  2) Put this file in /usr/libexec/xscreensaver/ and make executable
-#  3) Put the paths containing the movies you want to use into the
-#     "movie_paths" variable below
-#  4) Edit the ~/.xscreensaver file and add the following line at the
-#     end of the "programs:" list found in that file:
-#        "My Movies" xscreensaver-movies \n\
-#  5) Configure xscreensaver to use this file
+#  See the README.md file for more details.
 
 import os
 import random
+import json
+import optparse
 import subprocess
 
-#  Play the movies found in the following directories as screensavers
-movie_paths = ["/opt/ATV4", "/mnt/Video/TV/Archive/Sunrise Earth"]
-
-#  We want to play ALL of the movies in these directories in random 
-#  order, remembering what has been played across multiple invocations
-#  of this script.  To do this we keep a list of the movies that have
-#  yet to be played on disk in a config file.
-config_file = os.path.join(os.environ['HOME'], '.config', 'xscreensaver-movies')
-
-#  This function creates a new copy of the config file containing all
-#  movies in random order.
+#  This function creates a new config file containing the video paths
+#  and the list of videos to be played.
 def create_new_config_file(path_list, config_file):
-	movie_list = []
+	config = {}
+	config['pathlist'] = path_list
+	config['videolist'] = []
 	for path in path_list:
 		for dirpath, dirnames, filenames in os.walk(path):
 			for fn in filenames:
 				if fn.endswith(('.mov', '.mp4', '.mkv', '.mpg', '.avi')):
-					if os.path.exists(os.path.join(dirpath, fn)):
-						movie_list.append(os.path.join(dirpath, fn))
-	random.shuffle(movie_list)
+					config['videolist'].append(os.path.join(dirpath, fn))
+	random.shuffle(config['videolist'])
 	with open(config_file, 'w') as f:
-		for line in movie_list:
-			f.write("{}\n".format(line))
-	
-#  If the config file doesn't exist when we start the script, create it
-if not os.path.exists(config_file):
-	create_new_config_file(movie_paths, config_file)
+		json.dump(config, f)
 
-#  Read the config file to get the list of movies yet to be played		
-with open(config_file, 'r') as f:
-	movie_list = f.readlines()
-movie_list = [element.strip() for element in movie_list]
+if __name__ == "__main__":
 
-while True:
-	#  If there's nothing left in the list of movies, make a new random
-	#  list, i.e., start over from the beginning
-	if len(movie_list) <= 0:
-		create_new_config_file(movie_paths, config_file)
+	#  Process the command line
+	usage = 'Usage: {} -d directory[, directory, [...]]'.format(os.path.basename(__file__))
+	description = 'This script is a xscreensaver "hack" which plays video files when xscreensaver blanks the display.'
+	parser = optparse.OptionParser(usage=usage, description=description)
+	parser.add_option('-d', '--dirpath', dest='dirpath', help='A comma-seperated list of directories which contain the video files to be played')
+	(opts, args) = parser.parse_args()
+	if not opts.dirpath:
+		print usage
+		print "\nYou must specify at least one directory containing video files using the \"-d\" option"
+		exit(1)
+	else:
+		video_paths = [element.strip() for element in opts.dirpath.split(',')]
+		#  Confirm that the specified directories exist
+		for path in video_paths:
+			if not os.path.isdir(path):
+				print "Unable to find {} directory, ignoring it".format(path)
+				video_paths.remove(path)
+		if len(video_paths) <= 0:
+			print usage
+			print "\nNone of the directories you specified exist.  You must specify at least\none existing directory containing video files using the \"-d\" option."
+			exit(1)
+
+	#  We use a config file to remember what the video paths are and
+	#  which videos we have not played yet.
+	config_file = os.path.join(os.environ['HOME'], '.config', 'xscreensaver-movies.conf')
+
+	#  Read the config file to get the video paths list
+	if os.path.exists(config_file):
 		with open(config_file, 'r') as f:
-			movie_list = f.readlines()
-		movie_list = [element.strip() for element in movie_list]
+			config = json.load(f)
+
+	#  If the config file doesn't exist when we start the script, or
+	#  when the video_paths value has changed, create a new config file
+	if not os.path.exists(config_file) or video_paths != config['pathlist']:
+		create_new_config_file(video_paths, config_file)
+
+	#  Read the config file to get the list of videos yet to be played		
+	with open(config_file, 'r') as f:
+		config = json.load(f)
+
+	while True:
+		#  If there's nothing left in the list of videos, make a new random
+		#  list, i.e., start over from the beginning
+		if len(config['videolist']) <= 0:
+			create_new_config_file(video_paths, config_file)
+			with open(config_file, 'r') as f:
+				config = json.load(f)
+			
+		#  Pop the first video off the top of the list and write the
+		#  remainder of the list back to the config file
+		video = config['videolist'].pop(0)
+		with open(config_file, 'w') as f:
+			json.dump(config, f)
 		
-	#  Pop the first movie off the top of the list and write the
-	#  remainder of the list back to disk
-	movie = movie_list.pop(0)
-	with open(config_file, 'w') as f:
-		for line in movie_list:
-			f.write("{}\n".format(line))
-	
-	#  Play the popped file
-	if os.path.exists(movie):
-		if 'XSCREENSAVER_WINDOW' in os.environ:
-			cmdline = "mpv --really-quiet --no-audio --fs --no-stop-screensaver --wid='{}' --panscan=1.0 '{}'".format(os.environ['XSCREENSAVER_WINDOW'], movie)
-		else:
-			cmdline = "mpv --really-quiet --no-audio --fs --no-stop-screensaver --panscan=1.0 '{}'".format(movie)
-		subprocess.call(cmdline, shell=True)
+		#  Play the popped file
+		if os.path.exists(video):
+			if 'XSCREENSAVER_WINDOW' in os.environ:
+				cmdline = "mpv --really-quiet --no-audio --fs --no-stop-screensaver --wid='{}' --panscan=1.0 \"{}\"".format(os.environ['XSCREENSAVER_WINDOW'], video)
+			else:
+				cmdline = "mpv --really-quiet --no-audio --fs --no-stop-screensaver --panscan=1.0 \"{}\"".format(video)
+			subprocess.call(cmdline, shell=True)

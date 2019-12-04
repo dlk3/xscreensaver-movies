@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
 <screensaver name="xscreensaver-movies" _label="Play Movies">
-
+  <string id="dirpath"
+    _label="Comma-seperated list of video clip directories:"
+    arg="-d %"
+  />
   <_description>
-This Python script plays video clips.  The list of directories this script looks into for clips is coded inside the script
-itself.  Edit the file /usr/libexec/xscreensaver/xscreensaver-movies to set these directories.
+This Python script plays video files as a screen saver. The list of directories where this script looks for video files is set here.
   </_description>
 </screensaver>

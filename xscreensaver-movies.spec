@@ -1,18 +1,20 @@
 Name:           xscreensaver-movies
-Version:        0.1
-Release:        0.1%{?dist}
-Summary:        Play videos as xscreensaver screensavers
+Version:        0.2
+Release:        1%{?dist}
+Summary:        Play videos as xscreensaver screen savers
 
 License:        MIT
 URL:            https://github.com/dlk3/xscreensaver-movies
-Source0:        xscreensaver-movies-0.1.tar.gz
+Source0:        %{name}-%{version}.tar.gz
 BuildArch:      noarch
 
 Requires:       xscreensaver-base
 Requires:       mpv
 
 %description
-This is a Python script that will play video files as screensavers in xscreensaver. The video files are played in random order and do not repeat until all files have been played.
+This is a Python script that will play video files as screen savers in
+xscreensaver. The video files are played in random order and do not
+repeat until all files have been played.
 
 
 %prep
