@@ -18,10 +18,10 @@ if [ $(cat /etc/hostname) == "fang.localdomain" ]; then
 	echo "Building $NAME in fedora-rpmbuild:31 container ..."
 	podman run --interactive --name=rpmbuild --rm --tty --volume=${HOME}:${HOME} fedora-rpmbuild:31 "$(realpath "$0")"
 
-	echo "Test installation of RPM in fedora-rpmbuild:30 container ..."
+	echo "Test installation of ${NAME}-${VERSION}-${RELEASE}.fc30.noarch.rpm in fedora-rpmbuild:30 container ..."
 	podman run --interactive --name=rpmbuild --rm --tty --volume=${HOME}:${HOME} localhost/fedora-rpmbuild:30 dnf install -y /home/dlk/rpmbuild/RPMS/noarch/${NAME}-${VERSION}-${RELEASE}.fc30.noarch.rpm
 
-	echo "Test installation of RPM in fedora-rpmbuild:31 container ..."
+	echo "Test installation of ${NAME}-${VERSION}-${RELEASE}.fc31.noarch.rpm in fedora-rpmbuild:31 container ..."
 	podman run --interactive --name=rpmbuild --rm --tty --volume=${HOME}:${HOME} localhost/fedora-rpmbuild:31 dnf install -y /home/dlk/rpmbuild/RPMS/noarch/${NAME}-${VERSION}-${RELEASE}.fc31.noarch.rpm
 else
 	echo "Update system software ..."

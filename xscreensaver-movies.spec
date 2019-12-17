@@ -1,6 +1,6 @@
 Name:           xscreensaver-movies
 Version:        0.3
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Play videos as xscreensaver screen savers
 
 License:        MIT
