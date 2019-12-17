@@ -1,5 +1,5 @@
 Name:           xscreensaver-movies
-Version:        0.2
+Version:        0.3
 Release:        1%{?dist}
 Summary:        Play videos as xscreensaver screen savers
 
@@ -19,9 +19,6 @@ repeat until all files have been played.
 
 %prep
 %autosetup
-
-
-%build
 
 
 %install
@@ -46,5 +43,7 @@ install -m 644 xscreensaver-movies.xml %{buildroot}/usr/share/xscreensaver/confi
 
 
 %changelog
+* Sun Dec 15 2019 David King <dave@daveking.com>
+- Add --hwdec=auto option to mpv command
 * Sun Dec  1 2019 David King <dave@daveking.com>
-- 
+- Initial release

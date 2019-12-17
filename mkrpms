@@ -1,9 +1,41 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-NAME="xscreensaver-movies"
-VERSION="0.2"
+SPECFILE="xscreensaver-movies.spec"
 
-cd ~/src
-tar --exclude=.git --exclude=*.spec --exclude=mkrpms -zcvf ~/rpmbuild/SOURCES/${NAME}-${VERSION}.tar.gz ${NAME}-${VERSION}
-cd ~/src/"${NAME}-${VERSION}"
-rpmbuild -ba "${NAME}.spec"
+set -e
+
+#  Get the full path to the spec file
+SPECFILE=$(dirname "$(realpath "$0")")/$SPECFILE
+
+#  Parse the package name, version and release out of the spec file
+NAME=$(sed -n 's/^Name:[[:space:]]*//p' "$SPECFILE")
+VERSION=$(sed -n 's/^Version:[[:space:]]*//p' "$SPECFILE")
+RELEASE=$(sed -n 's/^Release:[[:space:]]*//;s/%{?dist}//p' "$SPECFILE")
+
+if [ $(cat /etc/hostname) == "fang.localdomain" ]; then
+	echo "Building $NAME in fedora-rpmbuild:30 container ..."
+	podman run --interactive --name=rpmbuild --rm --tty --volume=${HOME}:${HOME} localhost/fedora-rpmbuild:30 "$(realpath "$0")"
+	echo "Building $NAME in fedora-rpmbuild:31 container ..."
+	podman run --interactive --name=rpmbuild --rm --tty --volume=${HOME}:${HOME} fedora-rpmbuild:31 "$(realpath "$0")"
+
+	echo "Test installation of RPM in fedora-rpmbuild:30 container ..."
+	podman run --interactive --name=rpmbuild --rm --tty --volume=${HOME}:${HOME} localhost/fedora-rpmbuild:30 dnf install -y /home/dlk/rpmbuild/RPMS/noarch/${NAME}-${VERSION}-${RELEASE}.fc30.noarch.rpm
+
+	echo "Test installation of RPM in fedora-rpmbuild:31 container ..."
+	podman run --interactive --name=rpmbuild --rm --tty --volume=${HOME}:${HOME} localhost/fedora-rpmbuild:31 dnf install -y /home/dlk/rpmbuild/RPMS/noarch/${NAME}-${VERSION}-${RELEASE}.fc31.noarch.rpm
+else
+	echo "Update system software ..."
+	dnf -y upgrade
+
+	#  Create the source archive file in the SOURCES directory
+	cd /home/dlk/src
+	tar --exclude=.git --exclude=*.spec --exclude=mkrpms --transform "s|${NAME}/|${NAME}-${VERSION}/|" -zcvf /root/rpmbuild/SOURCES/${NAME}-${VERSION}.tar.gz ${NAME}
+
+	#  Build the packages
+	rpmbuild -ba "$SPECFILE"
+
+	echo "Copying RPM files to host system ..."
+	mv /root/rpmbuild/RPMS/noarch/*.rpm /home/dlk/rpmbuild/RPMS/noarch/
+	mv /root/rpmbuild/SRPMS/*.rpm /home/dlk/rpmbuild/SRPMS/
+fi
+

@@ -52,10 +52,11 @@ def create_new_config_file(path_list, config_file):
 if __name__ == "__main__":
 
 	#  Process the command line
-	usage = 'Usage: {} -d directory[, directory, [...]]'.format(os.path.basename(__file__))
+	usage = 'Usage: {} -d "directory[,directory,[...]]"'.format(os.path.basename(__file__))
 	description = 'This script is a xscreensaver "hack" which plays video files when xscreensaver blanks the display.'
 	parser = optparse.OptionParser(usage=usage, description=description)
 	parser.add_option('-d', '--dirpath', dest='dirpath', help='A comma-seperated list of directories which contain the video files to be played')
+	parser.add_option('-w', '--what', dest='unknown_option', help='Unknown option passed by xscreensaver-demo')
 	(opts, args) = parser.parse_args()
 	if not opts.dirpath:
 		print usage
@@ -108,7 +109,7 @@ if __name__ == "__main__":
 		#  Play the popped file
 		if os.path.exists(video):
 			if 'XSCREENSAVER_WINDOW' in os.environ:
-				cmdline = "mpv --really-quiet --no-audio --fs --no-stop-screensaver --wid='{}' --panscan=1.0 \"{}\"".format(os.environ['XSCREENSAVER_WINDOW'], video)
+				cmdline = "mpv --really-quiet --no-audio --fs --no-stop-screensaver --wid='{}' --panscan=1.0 --hwdec=auto \"{}\"".format(os.environ['XSCREENSAVER_WINDOW'], video)
 			else:
-				cmdline = "mpv --really-quiet --no-audio --fs --no-stop-screensaver --panscan=1.0 \"{}\"".format(video)
+				cmdline = "mpv --really-quiet --no-audio --fs --no-stop-screensaver --panscan=1.0 --hwdec=auto \"{}\"".format(video)
 			subprocess.call(cmdline, shell=True)

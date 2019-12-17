@@ -2,10 +2,10 @@
 
 <screensaver name="xscreensaver-movies" _label="Play Movies">
   <string id="dirpath"
-    _label="Comma-seperated list of video clip directories:"
+    _label="Video directories:"
     arg="-d %"
   />
   <_description>
-This Python script plays video files as a screen saver. The list of directories where this script looks for video files is set here.
+This Python script plays video files as a screen saver. The list of directories where this script looks for video files is set here.  This is a comma delimited string.  If there are any spaces in the string, xscreensaver-demo will mangle the string and prevent this script from working properly.  Example of a good string: "/video/directory_1,/directory_2,/directory3"
   </_description>
 </screensaver>
