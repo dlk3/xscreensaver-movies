@@ -3,7 +3,7 @@ Version:        0.3
 Release:        2%{?dist}
 Summary:        Play videos as xscreensaver screen savers
 
-License:        MIT
+License:        MPLv2.0
 URL:            https://github.com/dlk3/xscreensaver-movies
 Source0:        %{name}-%{version}.tar.gz
 BuildArch:      noarch
