@@ -1,3 +1,5 @@
+I made this before I realized that xscreensaver already has a FAQ that describes how to play videos as a screensaver.  See https://www.jwz.org/xscreensaver/faq.html#mpeg
+
 # Play Movies As XScreensaver Screen Saver
 
 ## xscreensaver-movies
